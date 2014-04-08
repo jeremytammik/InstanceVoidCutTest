@@ -32,5 +32,8 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion( "2014.0.0.0" )]
-[assembly: AssemblyFileVersion( "2014.0.0.0" )]
+// 2014-04-08 2014.0.0.0 initial commit throwing a message saying "The element is not a family instance with an unattached void that can cut. Parameter name: cuttingInstance"
+// 2014-04-08 2014.0.0.1 added call to regenerate and all works well
+// 2014-04-08 2014.0.0.2 added transaction group, refactored RetrieveOrLoadCuttingSymbol, cleaned up code
+[assembly: AssemblyVersion( "2014.0.0.2" )]
+[assembly: AssemblyFileVersion( "2014.0.0.2" )]

@@ -66,78 +66,14 @@ namespace InstanceVoidCutTest
     }
 
     /// <summary>
-    /// Cut a beam with 3 instances of a void-cutting 
-    /// family. The Family Parameter "Cut with Voids 
-    /// When Loaded" must be true for the cutting family.
+    /// Retrieve cutting symbol, loading family if needed.
     /// </summary>
-    void CutBeamWithVoid(
-      FamilyInstance beam,
-      FamilySymbol cuttingSymbol )
+    static FamilySymbol RetrieveOrLoadCuttingSymbol( 
+      Document doc )
     {
-      Document doc = beam.Document;
-
-      Level level = doc.GetElement( beam.LevelId )
-        as Level;
-
-      LocationCurve lc = beam.Location
-        as LocationCurve;
-
-      Curve beamCurve = lc.Curve;
-
-      Debug.Print( "Beam location from {0} to {1}.",
-        PointString( beamCurve.GetEndPoint( 0 ) ),
-        PointString( beamCurve.GetEndPoint( 1 ) ) );
-
-      XYZ p;
-      string parameter_name;
-
-      for( int i = 1; i <= 3; ++i )
-      {
-        // Position on beam for this cutting instance
-
-        p = beamCurve.Evaluate( i * 0.25, true );
-
-        // Adjust height for top-aligned curve
-
-        //p = p - XYZ.BasisZ;
-
-        Debug.Print(
-          "Family instance insertion at {0}.",
-          PointString( p ) );
-
-        FamilyInstance cuttingInstance = doc.Create
-          .NewFamilyInstance( p, cuttingSymbol,
-            level, StructuralType.NonStructural );
-
-        parameter_name = "A" + i.ToString();
-
-        cuttingInstance
-          .get_Parameter( parameter_name )
-          .Set( 0.5 * Math.PI );
-
-        // This throws and exception saying 
-        // "The element is not a family instance with 
-        // an unattached void that can cut. Parameter 
-        // name: cuttingInstance"
-
-        InstanceVoidCutUtils.AddInstanceVoidCut(
-          doc, beam, cuttingInstance );
-      }
-    }
-
-    public Result Execute(
-      ExternalCommandData commandData,
-      ref string message,
-      ElementSet elements )
-    {
-      UIApplication uiapp = commandData.Application;
-      UIDocument uidoc = uiapp.ActiveUIDocument;
-      Application app = uiapp.Application;
-      Document doc = uidoc.Document;
-
       FilteredElementCollector a
-         = new FilteredElementCollector( doc )
-           .OfClass( typeof( Family ) );
+          = new FilteredElementCollector( doc )
+            .OfClass( typeof( Family ) );
 
       Family family = a.FirstOrDefault<Element>(
         e => e.Name.Equals( FamilyName ) )
@@ -155,12 +91,13 @@ namespace InstanceVoidCutTest
             + "family file '{0}' is present.",
             FamilyPath ) );
 
-          return Result.Failed;
+          return null;
         }
 
         // Load family from file:
 
-        using( Transaction tx = new Transaction( doc ) )
+        using( Transaction tx = new Transaction( 
+          doc ) )
         {
           tx.Start( "Load Family" );
           doc.LoadFamily( FamilyPath, out family );
@@ -176,35 +113,130 @@ namespace InstanceVoidCutTest
         break;
       }
 
-      Selection sel = uidoc.Selection;
+      return cuttingSymbol;
+    }
 
-      FamilyInstance beam = null;
+    /// <summary>
+    /// Cut a beam with three instances of a void
+    /// cutting family. Its family parameter "Cut 
+    /// with Voids When Loaded" must be set to true.
+    /// </summary>
+    static void CutBeamWithVoid(
+      FamilyInstance beam,
+      FamilySymbol cuttingSymbol )
+    {
+      Document doc = beam.Document;
 
-      try
-      {
-        Reference r = sel.PickObject(
-          ObjectType.Element,
-          new BeamSelectionFilter(),
-          "Pick beam to cut" );
+      Level level = doc.GetElement( beam.LevelId )
+        as Level;
 
-        beam = doc.GetElement( r.ElementId )
-          as FamilyInstance;
-      }
-      catch( Autodesk.Revit.Exceptions
-        .OperationCanceledException )
-      {
-        return Result.Cancelled;
-      }
+      LocationCurve lc = beam.Location
+        as LocationCurve;
 
-      // Modify document within a transaction
+      Curve beamCurve = lc.Curve;
+
+      Debug.Print( "Beam location from {0} to {1}.",
+        PointString( beamCurve.GetEndPoint( 0 ) ),
+        PointString( beamCurve.GetEndPoint( 1 ) ) );
+
+      int n = 3;
+      XYZ p;
+      string parameter_name;
+      ElementId[] ids = new ElementId[n];
 
       using( Transaction tx = new Transaction( doc ) )
       {
-        tx.Start( "Cut Beam With Void" );
-        CutBeamWithVoid( beam, cuttingSymbol );
+        tx.Start( "Create Cutting Instances" );
+
+        for( int i = 1; i <= n; ++i )
+        {
+          // Position on beam for this cutting instance
+
+          p = beamCurve.Evaluate( i * 0.25, true );
+
+          // Adjust height for top-aligned curve
+
+          //p = p - XYZ.BasisZ;
+
+          Debug.Print(
+            "Family instance insertion at {0}.",
+            PointString( p ) );
+
+          FamilyInstance cuttingInstance = doc.Create
+            .NewFamilyInstance( p, cuttingSymbol,
+              level, StructuralType.NonStructural );
+
+          parameter_name = "A" + i.ToString();
+
+          cuttingInstance
+            .get_Parameter( parameter_name )
+            .Set( 0.5 * Math.PI );
+
+          ids[i - 1] = cuttingInstance.Id;
+        }
         tx.Commit();
       }
 
+      using( Transaction tx = new Transaction( doc ) )
+      {
+        tx.Start( "Cut Beam With Voids" );
+
+        for( int i = 0; i < n; ++i )
+        {
+          InstanceVoidCutUtils.AddInstanceVoidCut(
+            doc, beam, doc.GetElement( ids[i] ) );
+        }
+        tx.Commit();
+      }
+    }
+
+    public Result Execute(
+      ExternalCommandData commandData,
+      ref string message,
+      ElementSet elements )
+    {
+      UIApplication uiapp = commandData.Application;
+      UIDocument uidoc = uiapp.ActiveUIDocument;
+      Document doc = uidoc.Document;
+
+      using( TransactionGroup g
+        = new TransactionGroup( doc ) )
+      {
+        g.Start( "Cut Beam with Voids" );
+
+        // Retrieve or load cutting symbol
+
+        FamilySymbol cuttingSymbol
+          = RetrieveOrLoadCuttingSymbol( doc );
+
+        // Select beam to cut
+
+        Selection sel = uidoc.Selection;
+
+        FamilyInstance beam = null;
+
+        try
+        {
+          Reference r = sel.PickObject(
+            ObjectType.Element,
+            new BeamSelectionFilter(),
+            "Pick beam to cut" );
+
+          beam = doc.GetElement( r.ElementId )
+            as FamilyInstance;
+        }
+        catch( Autodesk.Revit.Exceptions
+          .OperationCanceledException )
+        {
+          return Result.Cancelled;
+        }
+
+        // Place cutting instances and apply cuts
+
+        CutBeamWithVoid( beam, cuttingSymbol );
+
+        g.Commit();
+      }
       return Result.Succeeded;
     }
   }
