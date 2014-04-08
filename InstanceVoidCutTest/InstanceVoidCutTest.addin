@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Command">
+    <Text>InstanceVoidCutUtils Test</Text>
+    <Description>Test InstanceVoidCutUtils</Description>
+    <Assembly>InstanceVoidCutTest.dll</Assembly>
+    <FullClassName>InstanceVoidCutTest.Command</FullClassName>
+    <ClientId>538514d6-691d-416c-bc53-5f321ca1d0c5</ClientId>
+    <VendorId>TBC_</VendorId>
+    <VendorDescription>The Building Coder, http://thebuildingcoder.typepad.com</VendorDescription>
+  </AddIn>
+</RevitAddIns>
