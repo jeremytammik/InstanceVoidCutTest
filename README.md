@@ -1,4 +1,4 @@
 InstanceVoidCutTest
 ===================
 
-Revit add-in to the the InstanceVoidCutUtils functionality
+Revit add-in to test the InstanceVoidCutUtils functionality
