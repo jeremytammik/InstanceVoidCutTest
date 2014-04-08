@@ -235,7 +235,14 @@ namespace InstanceVoidCutTest
 
         CutBeamWithVoid( beam, cuttingSymbol );
 
-        g.Commit();
+        g.Assimilate();
+
+        // Calling Commit after Assimilate throws an 
+        // exception saying "The Transaction group has 
+        // not been started (its status is not 
+        // 'Started').."
+
+        //g.Commit();
       }
       return Result.Succeeded;
     }

@@ -35,5 +35,6 @@ using System.Runtime.InteropServices;
 // 2014-04-08 2014.0.0.0 initial commit throwing a message saying "The element is not a family instance with an unattached void that can cut. Parameter name: cuttingInstance"
 // 2014-04-08 2014.0.0.1 added call to regenerate and all works well
 // 2014-04-08 2014.0.0.2 added transaction group, refactored RetrieveOrLoadCuttingSymbol, cleaned up code
-[assembly: AssemblyVersion( "2014.0.0.2" )]
-[assembly: AssemblyFileVersion( "2014.0.0.2" )]
+// 2014-04-08 2014.0.0.3 added call to assimilate the transactions into the group
+[assembly: AssemblyVersion( "2014.0.0.3" )]
+[assembly: AssemblyFileVersion( "2014.0.0.3" )]
