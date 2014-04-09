@@ -19,12 +19,15 @@ namespace InstanceVoidCutTest
   {
     const string FamilyName = "Cutter";
 
-    const string FamilyPath = "C:/a/vs/InstanceVoidCutTest/Cutter.rfa";
+    const string FamilyPath
+      = "C:/a/vs/InstanceVoidCutTest/Cutter.rfa";
 
     public static void ErrorMsg( string msg )
     {
       Debug.WriteLine( msg );
-      TaskDialog.Show( "InstanceVoidCutUtils Test", msg );
+
+      TaskDialog.Show( "InstanceVoidCutUtils Test",
+        msg );
     }
 
     /// <summary>
@@ -55,8 +58,8 @@ namespace InstanceVoidCutTest
       {
         return e is FamilyInstance
           && null != e.Category
-          && e.Category.Id.IntegerValue.Equals(
-            (int) BuiltInCategory.OST_StructuralFraming );
+          && e.Category.Id.IntegerValue.Equals( (int)
+            BuiltInCategory.OST_StructuralFraming );
       }
 
       public bool AllowReference( Reference r, XYZ p )
@@ -66,9 +69,10 @@ namespace InstanceVoidCutTest
     }
 
     /// <summary>
-    /// Retrieve cutting symbol, loading family if needed.
+    /// Retrieve cutting symbol, 
+    /// loading family if needed.
     /// </summary>
-    static FamilySymbol RetrieveOrLoadCuttingSymbol( 
+    static FamilySymbol RetrieveOrLoadCuttingSymbol(
       Document doc )
     {
       FilteredElementCollector a
@@ -96,7 +100,7 @@ namespace InstanceVoidCutTest
 
         // Load family from file:
 
-        using( Transaction tx = new Transaction( 
+        using( Transaction tx = new Transaction(
           doc ) )
         {
           tx.Start( "Load Family" );
@@ -139,8 +143,8 @@ namespace InstanceVoidCutTest
         PointString( beamCurve.GetEndPoint( 0 ) ),
         PointString( beamCurve.GetEndPoint( 1 ) ) );
 
-      int n = 3;
       XYZ p;
+      int n = 3;
       string parameter_name;
       ElementId[] ids = new ElementId[n];
 
@@ -177,12 +181,12 @@ namespace InstanceVoidCutTest
 
         doc.Regenerate();
 
-      //  tx.Commit();
-      //}
+        //  tx.Commit();
+        //}
 
-      //using( Transaction tx = new Transaction( doc ) )
-      //{
-      //  tx.Start( "Cut Beam With Voids" );
+        //using( Transaction tx = new Transaction( doc ) )
+        //{
+        //  tx.Start( "Cut Beam With Voids" );
 
         for( int i = 0; i < n; ++i )
         {
