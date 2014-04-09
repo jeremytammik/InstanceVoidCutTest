@@ -146,7 +146,7 @@ namespace InstanceVoidCutTest
 
       using( Transaction tx = new Transaction( doc ) )
       {
-        tx.Start( "Create Cutting Instances" );
+        tx.Start( "Create Cutting Instances and Apply Cut" );
 
         for( int i = 1; i <= n; ++i )
         {
@@ -174,12 +174,15 @@ namespace InstanceVoidCutTest
 
           ids[i - 1] = cuttingInstance.Id;
         }
-        tx.Commit();
-      }
 
-      using( Transaction tx = new Transaction( doc ) )
-      {
-        tx.Start( "Cut Beam With Voids" );
+        doc.Regenerate();
+
+      //  tx.Commit();
+      //}
+
+      //using( Transaction tx = new Transaction( doc ) )
+      //{
+      //  tx.Start( "Cut Beam With Voids" );
 
         for( int i = 0; i < n; ++i )
         {
